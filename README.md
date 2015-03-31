@@ -27,20 +27,20 @@ The Preferences.txt file is very important to the bot's functionality, as it all
 -   Example: 
 
 
-    modules messagelogger example-module commands
-    debugLevel 1
+        modules messagelogger example-module commands
+        debugLevel 1
 
-    #testchannel1
-    commandCharacters !~
-    lengthLimit 500
-    capsTolerance 0.5
-    log true
-    
-    #testchannel
-    commandCharacters ~!
-    lengthLimit -1
-    capsTolerance 0.5
-    log false
+        #testchannel1
+        commandCharacters !~
+        lengthLimit 500
+        capsTolerance 0.5
+        log true
+
+        #testchannel
+        commandCharacters ~!
+        lengthLimit -1
+        capsTolerance 0.5
+        log false
 
 #### Modules
 Modules are js files put into the modules folder, and are used to extend the functionality of the bot without requiring editing the main bot's code. Modules can have any of the following attributes using exports:
