@@ -1,0 +1,11 @@
+{
+"options": {
+"debug": true,
+"debugIgnore": ["ping"]
+},
+"identity": {
+"username": "testuser",
+"password": "oauth:<your oauth token>"
+},
+"channels": ["testchannel"]
+}

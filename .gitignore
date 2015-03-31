@@ -1,0 +1,11 @@
+#options.json has sensitive information (name the oauth token) and should be ignored
+options.json
+#everyone has their own preferences
+preferences.txt
+#
+#ignore certain folders
+logs/
+node_modules/
+.idea/
+#
+#
