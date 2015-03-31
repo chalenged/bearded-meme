@@ -1,13 +1,14 @@
 /**
- * Created by Chalenged on 3/26/2015.
+ *
  */
-var settings = require("./settings.json");
 var options = require("./options.json");
 //irc = require("irc");
 twitchirc = require("twitch-irc");
 fs = require("fs");
 
+bot = new twitchirc.client(options); //global so modules can access the bot, to make it say things, do actions, etc.
 
+bot.connect();
 
 preferences = {};
 
@@ -21,17 +22,25 @@ assertFolder = function(folder) {
 
 assertFolder("./modules"); //make sure modules exists
 
-var availableModules = fs.readdirSync("./modules/", function(err) { //synchronous to ensure modules are loaded before bot starts
-    if (err) throw err;
-});
+var availableModules = fs.readdirSync("./modules/");//synchronous to ensure modules are loaded before bot starts
 
 //console.log(availableModules);
 function readPreferences() {
-    var data = fs.readFileSync('./Preferences.txt', {encoding: 'utf8'}); //we want preferences loaded before things are set up, so load them synchronously
-    data = data.replace(/\r/g, ""); //remove carriage returns
-    var prefs = data.split("\n"); //splits for each line
     var channel = "#global";
     preferences[channel] = {};
+    var fail = false;
+    try {
+        var data = fs.readFileSync('./Preferences.txt', {encoding: 'utf8'}); //we want preferences loaded before things are set up, so load them synchronously
+    } catch(err) {
+        if (err.code === "ENOENT") fail = true; //no preferences file, none loaded
+        else throw err; //some other readFile error
+    }
+    if (fail) {
+        console.log("Preferences.txt file not found (no modules will be loaded!)");
+        return; //can't read preferences if the file doesn't exist
+    }
+    data = data.replace(/\r/g, ""); //remove carriage returns
+    var prefs = data.split("\n"); //splits for each line
     for (var i = 0; i < prefs.length; i++) { //operate on each line
         var line = prefs[i]; //easy reference
         if (!line) continue;
@@ -49,7 +58,7 @@ function readPreferences() {
         if (end === -1) end = data.length; //end of line if no comments
         preferences[channel][line.substring(0, index)] = line.substring(index + 1, end); //adds to preferences object
     }
-    console.log("preferences successfully loaded");
+    console.log("Preferences successfully loaded");
 }
 readPreferences();
 
@@ -60,26 +69,19 @@ function loadModules() {
         var modulesToUse = preferences["#global"]["modules"].split(" ");
         for (var i = 0; i < modulesToUse.length; i++) {
             var mod = modulesToUse[i] + ".js";
-            //mod = new RegExp(mod + ".js", "i");
             var found = false;
-            var modFile = "";
             for (var j = 0; j < availableModules.length; j++) {
                 var avMod = availableModules[j];
 
                 if (avMod.toLowerCase() === mod.toLowerCase()) {
-                    //console.log(avMod.toLowerCase(), mod.toLowerCase());
-                    //throw "Error loading module " + mod + ": Module not found";
                     found = true;
                     modulesToLoad.push(avMod);
                 }
             }
             if (!found) throw "Error loading module " + mod + ": Module not found";
-            //if (availableModules.indexOf(new RegExp(mod + ".js", "i")) === -1) {
-            //    throw "Error loading module " + mod + ": Module not found";
-            //}
         }
     }
-    console.log("Loading modules: ", modulesToLoad.join(", ").replace( /.js/g, ""));
+    if (modulesToLoad.length > 0) console.log("Loading modules: ", modulesToLoad.join(", ").replace( /.js/g, ""));
 
     for (var i = 0; i < modulesToLoad.length; i++) {
         var module = modulesToLoad[i];
@@ -89,6 +91,33 @@ function loadModules() {
 
 }
 loadModules();
+
+function checkModuleRequirements() {
+    for (var x in modules) {
+        if (!modules[x].hasOwnProperty("requirements")) continue; //if no requirements, move to next module
+        for (var i = 0; i < modules[x].requirements.length; i++) {
+            var found = false;
+            var moduleList = Object.keys(modules);
+            for (var j = 0; j < moduleList.length; j++) {
+                if (moduleList[j].toLowerCase() === modules[x].requirements[i].toLowerCase() || modules[x].requirements[i].charAt(0) === "!") found = true;
+                if (modules[x].requirements[i].charAt(0) === "!") {
+                    if (moduleList[j].toLowerCase() === modules[x].requirements[i].substr(1).toLowerCase()) {
+                        var err = "Error loading module " + x + ": incompatable with " + modules[x].requirements[i].substr(1);
+                        console.log(err);
+                        throw err;
+                    }
+                }
+            }
+            if (!found) {
+                    var err = "Error loading module " + x + ": Requires " + modules[x].requirements[i];
+                    console.log(err);
+                    throw err;
+            }
+        }
+    }
+}
+checkModuleRequirements();
+
 /*
 bot = new irc.Client(settings.server, settings.nick, {
     channels: [settings.channels + " " + settings.password],
@@ -109,7 +138,7 @@ bot.addListener("join", function (channel, who) {
 });
 */
 
-getPreference = function(preference, channel, defaultValue) {
+getPreference = function(preference, channel, defaultValue) { //global function, modules need this function
     if (preferences[channel].hasOwnProperty(preference)) return preferences[channel][preference];
     if (preferences["global"].hasOwnProperty(preference)) return preferences["global"][preference];
     else return defaultValue;
@@ -117,9 +146,10 @@ getPreference = function(preference, channel, defaultValue) {
 
 
 function setupModules() {
-    console.log("Setting up modules...");
     var priorityList = modulePriorityList();
-    for (var i = 0; i < priorityList.length; i++) {
+    if (priorityList.length === 0) return; //no reason to try loading modules that don't exist
+    console.log("Setting up modules...");
+    for (var i = 0; i < priorityList.length; i++) { //setup modules in order of priority
         if (modules[priorityList[i]].hasOwnProperty("setup")) modules[priorityList[i]].setup();
     }
 }
@@ -183,17 +213,6 @@ bot.addListener("raw", function(message) {
     console.log(message);
 });
 */
-
-bot = new twitchirc.client(options);
-
-bot.connect();
-
-getRank = function(user) {
-    if (user.special.indexOf("broadcaster") > -1) return 3;
-    if (user.special.indexOf("mod") > -1) return 2;
-    if (user.special.indexOf("subscriber") > -1) return 1;
-    else return 0;
-};
 
 bot.addListener('chat', function (channel, user, message) {
     console.log(user.username + ": " + message);
