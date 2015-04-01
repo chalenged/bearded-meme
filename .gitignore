@@ -7,5 +7,7 @@ preferences.txt
 logs/
 node_modules/
 .idea/
+#misc is to be used by modules for storing things
+misc/
 #
 #
