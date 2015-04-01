@@ -3,11 +3,14 @@
  */
 
 /*
-* Commands structure is as follows:
-* commandName: function(user, message, channel) {
-*   return "message to say";
-* }
-* */
+ * Commands structure is as follows:
+ * commands.commandName = {"command": function(user, message, channel) {
+ *   return "message to say";
+ * },
+ * "rank": <rank>;//rank is a numeric from 0-3. 0=regular, 1=subscriber, 2=moderator, 3=broadcaster
+ * };
+ * using the "this" keyword in a command represents the command object
+ * */
 
 
 exports.setup = function() {
@@ -29,8 +32,18 @@ exports.onMessage = function(user, message, channel) {
         var index = message.indexOf(" ");
         if (index === -1) index = message.length + 1;
         var command = message.substring(1, index);
-        if (commands.hasOwnProperty(command)) commands[command](user, message, channel); //command functions are responsible for checking rank
-        //console.log(command);
+        if (commands.hasOwnProperty(command)) {
+            if (!commands[command].hasOwnProperty("rank")) {
+                commands[command].rank = 0;
+                console.log("Command " + command + " had no rank set, defaulting to 0 (regular)");
+            }
+            if (commands[command].rank <= getRank(user)) {
+                if (!commands[command].hasOwnProperty("command")) {
+                    console.log("Command object " + command + " found, but has no command function.");
+                } else
+                    commands[command].command(user, message, channel);
+            }
+        }
     }
 };
 

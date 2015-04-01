@@ -5,14 +5,20 @@
 exports.setup = function() {
     this.count = {};
     var self = this;
-    commands.example = function(user, message, channel) {
+    commands.example = {
+        "command": function(user, message, channel) {
         bot.say(channel, "Hello, " + user.username + "! This is an example command!");
+    },
+        "rank": 0
     };
-    commands.count = function(user, message, channel) {
-        if (!self.count[channel]) self.count[channel] = 0;
-        self.count[channel]++;
-        bot.say(channel, "This command has been used " + self.count[channel] + " times!");
+    commands.count = {};
+    commands.count.command = function(user, message, channel) {
+        if (!this.count) this.count = {};
+        if (!this.count[channel]) this.count[channel] = 0;
+        this.count[channel]++;
+        bot.say(channel, "This command has been used " + this.count[channel] + " times!");
     };
+    commands.count.rank = 1;
 };
 
 exports.requirements = ["commands", "!incompatablemodule"];
