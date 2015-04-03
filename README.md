@@ -59,6 +59,7 @@ Modules have access to the following attributes (as well as other implicitly dec
     assertFolder(path) //ensures that a folder exists. Will create it if it doesn't i.e. assertFolder(./modules)
     modules //an object that stores the different modules
     getPreferences(preferenceName, channel, default) //gets the preference (In a string!) for the desired channel, defaulting to the global if none exists for that channel, and defaulting to the specified default if neither is specified
+    runModules(functionName, ...)//runs a function on all modules that have that function, passing the elements from this function into the module function
     anything else provided by modules.
 
 You can create "global" attributes such as these by simply implicitly declaring them, such as

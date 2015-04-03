@@ -18,7 +18,7 @@ exports.setup = function() {
         this.count[channel]++;
         bot.say(channel, "This command has been used " + this.count[channel] + " times!");
     };
-    commands.count.rank = 1;
+    commands.count.rank = 0;
 };
 
 exports.requirements = ["commands", "!incompatablemodule"];

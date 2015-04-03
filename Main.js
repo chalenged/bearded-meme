@@ -11,6 +11,21 @@ var options = require("./options.json");
 twitchirc = require("twitch-irc");
 fs = require("fs");
 
+String.prototype.getIndexes = function(arg) {//returns an array of indexes the arg appears
+    var indexes = [];
+    var text = this;
+    var count = 0;
+    var index = text.indexOf(arg);
+    while (index > -1) {
+        text = text.substr(index+1);
+        count += index;
+        indexes.push(count);
+        count++;
+        index = text.indexOf(arg);
+    }
+    return indexes;
+};
+
 bot = new twitchirc.client(options); //global so modules can access the bot, to make it say things, do actions, etc.
 
 bot.connect();
@@ -26,6 +41,7 @@ assertFolder = function(folder) {
 };
 
 assertFolder("./modules"); //make sure modules exists
+assertFolder("./misc");
 
 var availableModules = fs.readdirSync("./modules/");//synchronous to ensure modules are loaded before bot starts
 
@@ -168,14 +184,14 @@ function modulePriorityList() {
     });                                                             //same priority shouldn't matter the order. If it does, the priorities should be changed
 }
 
-function runModules(func) {
+runModules = function(func) {
     //console.log(priorityList);
     //this[func].apply(this, Array.prototype.slice.call(arguments, 1));
     var priorityList = modulePriorityList();
     for (var i = 0; i < priorityList.length; i++) {
-        if (modules[priorityList[i]].hasOwnProperty(func)) modules[priorityList[i]][func].apply(this, Array.prototype.slice.call(arguments, 1));
+        if (modules[priorityList[i]].hasOwnProperty(func)) modules[priorityList[i]][func].apply(modules[priorityList[i]], Array.prototype.slice.call(arguments, 1));
     }
-}
+};
 //runModules();
 /*
 for (var x in settings.channels) {
@@ -220,7 +236,6 @@ bot.addListener("raw", function(message) {
 */
 
 bot.addListener('chat', function (channel, user, message) {
-    console.log(user.username + ": " + message);
     runModules("onMessage", user, message, channel);
 });
 /*

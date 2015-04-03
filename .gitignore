@@ -4,9 +4,7 @@ options.json
 preferences.txt
 #
 #ignore certain folders
-logs/
 node_modules/
-.idea/
 #misc is to be used by modules for storing things
 misc/
 #

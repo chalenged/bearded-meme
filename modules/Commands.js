@@ -22,11 +22,27 @@ exports.setup = function() {
         if (user.special.indexOf("subscriber") > -1) return 1;
         else return 0;
     };
+
+    readRank = function(rank) {
+        rank = String(rank);
+        rank = rank.trim();
+        if ("0123".indexOf(rank) > -1) rank = "rsmb"["0123".indexOf(rank)];
+        var text = "";
+        switch (rank) {
+            case "r": text = "r (regular)"; break;
+            case "s": text = "s (subscriber)"; break;
+            case "m": text = "m (mod)"; break;
+            case "b": text = "b (broadcaster)"; break;
+            default: console.log("Error determining rank from \"" + rank + "\""); text = "undetermined"; break;
+        }
+        return text;
+    }
 };
 
 exports.onMessage = function(user, message, channel) {
     //console.log(user);
     var commandCharacters = getPreference("commandCharacters", channel, "!");
+    var found = false;
     console.log("command characters: "  + commandCharacters);
     if (commandCharacters.indexOf(message.charAt(0)) > -1) {
         var index = message.indexOf(" ");
@@ -40,11 +56,14 @@ exports.onMessage = function(user, message, channel) {
             if (commands[command].rank <= getRank(user)) {
                 if (!commands[command].hasOwnProperty("command")) {
                     console.log("Command object " + command + " found, but has no command function.");
-                } else
+                } else {
                     commands[command].command(user, message, channel);
+                    found = true;
+                }
             }
         }
     }
+    if (!found) runModules("customCommand", user, message, channel);
 };
 
 exports.priority = 10; //since any module that adds commands needs to run after commands is loaded, commands gets a high priority
