@@ -26,9 +26,21 @@ String.prototype.getIndexes = function(arg) {//returns an array of indexes the a
     return indexes;
 };
 
-bot = new twitchirc.client(options); //global so modules can access the bot, to make it say things, do actions, etc.
-
-bot.connect();
+saveObject = function(filename, object, sync) {
+    //console.log("test");
+    try {
+        if (sync) return fs.writeFileSync(filename, JSON.stringify(object));
+    } catch (err) {
+        console.log("Error saving object synchronously.");
+        throw err;
+    }
+    fs.writeFile(filename, JSON.stringify(object), function(err) {
+        if (err) {
+            console.log("Error saving object.");
+            throw err;
+        }
+    })
+};
 
 preferences = {};
 
@@ -161,7 +173,7 @@ bot.addListener("join", function (channel, who) {
 
 getPreference = function(preference, channel, defaultValue) { //global function, modules need this function
     if (preferences[channel].hasOwnProperty(preference)) return preferences[channel][preference];
-    if (preferences["global"].hasOwnProperty(preference)) return preferences["global"][preference];
+    if (preferences["#global"].hasOwnProperty(preference)) return preferences["#global"][preference];
     else return defaultValue;
 };
 
@@ -189,6 +201,7 @@ runModules = function(func) {
     //this[func].apply(this, Array.prototype.slice.call(arguments, 1));
     var priorityList = modulePriorityList();
     for (var i = 0; i < priorityList.length; i++) {
+        if (Number(getPreference("debugLevel", "#global", "0")) > 1) console.log("Running " + func + " on module" + priorityList[i]);
         if (modules[priorityList[i]].hasOwnProperty(func)) modules[priorityList[i]][func].apply(modules[priorityList[i]], Array.prototype.slice.call(arguments, 1));
     }
 };
@@ -235,7 +248,14 @@ bot.addListener("raw", function(message) {
 });
 */
 
+
+bot = new twitchirc.client(options); //global so modules can access the bot, to make it say things, do actions, etc.
+
+bot.connect();
+
+
 bot.addListener('chat', function (channel, user, message) {
+    console.log(user.username + ": " + message);
     runModules("onMessage", user, message, channel);
 });
 /*

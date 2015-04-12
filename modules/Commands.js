@@ -63,7 +63,7 @@ exports.onMessage = function(user, message, channel) {
             }
         }
     }
-    if (!found) runModules("customCommand", user, message, channel);
+    if (!found) runModules("customCommand", user, message, channel); //won't fail if customCommands isn't loaded, but shouldn't affect other modules regardless
 };
 
 exports.priority = 10; //since any module that adds commands needs to run after commands is loaded, commands gets a high priority

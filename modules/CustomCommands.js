@@ -22,6 +22,7 @@ exports.setup = function() {
             self.customCommands[channel][name] = command;
         }
         console.log(self.customCommands);
+        saveObject("./misc/commands.json", self.customCommands);
     });
     commands.addcom = {
         syntax: "addcom <rank r/s/m/b> <command name> <formatted text>",
@@ -54,14 +55,19 @@ exports.setup = function() {
             self.customCommands[channel][name].command = command;
             self.customCommands[channel][name].rank = rank;
             bot.say(channel, ((edited) ? ("Edited ") : ("Added ")) + name + " at rank " + readRank(rank) + "!");
-
+            saveObject("./misc/commands.json", self.customCommands);
             console.log(name + ": " + self.customCommands[channel][name]);
         },
         rank: 2
+    };
+    commands.delcom = {
+        syntax: "!delcom <command>",
+
     }
 };
 
 exports.customCommand = function(user, message, channel) {
+    console.log("reading custom command");
     var trigger = message.split(" ")[0].toLowerCase();
     var text = message.substr(message.indexOf(" ") + 1);
     var args = text.split(" ");
@@ -84,4 +90,4 @@ exports.customCommand = function(user, message, channel) {
     }
 };
 
-exports.requirements = ["commands"];
+exports.requirements = ["commands"]; //requires commands module
