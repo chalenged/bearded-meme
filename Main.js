@@ -26,22 +26,6 @@ String.prototype.getIndexes = function(arg) {//returns an array of indexes the a
     return indexes;
 };
 
-saveObject = function(filename, object, sync) {
-    //console.log("test");
-    try {
-        if (sync) return fs.writeFileSync(filename, JSON.stringify(object));
-    } catch (err) {
-        console.log("Error saving object synchronously.");
-        throw err;
-    }
-    fs.writeFile(filename, JSON.stringify(object), function(err) {
-        if (err) {
-            console.log("Error saving object.");
-            throw err;
-        }
-    })
-};
-
 preferences = {};
 
 assertFolder = function(folder) {

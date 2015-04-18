@@ -43,7 +43,7 @@ exports.onMessage = function(user, message, channel) {
     //console.log(user);
     var commandCharacters = getPreference("commandCharacters", channel, "!");
     var found = false;
-    console.log("command characters: "  + commandCharacters);
+    //console.log("command characters: "  + commandCharacters);
     if (commandCharacters.indexOf(message.charAt(0)) > -1) {
         var index = message.indexOf(" ");
         if (index === -1) index = message.length + 1;
