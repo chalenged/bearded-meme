@@ -6,10 +6,16 @@
   *
   * You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-var options = require("./options.json");
+options = require("./options.json");
 //irc = require("irc");
 twitchirc = require("twitch-irc");
 fs = require("fs");
+
+
+bot = new twitchirc.client(options); //global so modules can access the bot, to make it say things, do actions, etc.
+
+
+bot.connect();
 
 String.prototype.getIndexes = function(arg) {//returns an array of indexes the arg appears
     var indexes = [];
@@ -167,7 +173,7 @@ function setupModules() {
     if (priorityList.length === 0) return; //no reason to try loading modules that don't exist
     console.log("Setting up modules...");
     for (var i = 0; i < priorityList.length; i++) { //setup modules in order of priority
-        if (modules[priorityList[i]].hasOwnProperty("setup")) modules[priorityList[i]].setup();
+        if (modules[priorityList[i]].hasOwnProperty("setup")) modules[priorityList[i]].setup(this);
     }
 }
 setupModules();
@@ -233,13 +239,11 @@ bot.addListener("raw", function(message) {
 */
 
 
-bot = new twitchirc.client(options); //global so modules can access the bot, to make it say things, do actions, etc.
 
-bot.connect();
 
 
 bot.addListener('chat', function (channel, user, message) {
-    console.log(user.username + ": " + message);
+    //console.log(user.username + ": " + message);
     runModules("onMessage", user, message, channel);
 });
 /*
