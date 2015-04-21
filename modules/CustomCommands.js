@@ -46,7 +46,7 @@ exports.setup = function() {
                 bot.say(channel, "Error determining rank. Correct syntax is: " + this.syntax);
                 return;
             }
-            var name = message.substring(indexes[1], indexes[2]).trim();
+            var name = message.substring(indexes[1], indexes[2]).trim().toLowerCase();
             if (!name) return;//edge case
             if (!self.customCommands.hasOwnProperty(channel)) self.customCommands[channel] = {};
             var command = message.substr(indexes[2]).trim();
@@ -55,7 +55,7 @@ exports.setup = function() {
             }
             if ("rsmb".indexOf(rank) > -1) rank = "rsmb".indexOf(rank);
             self.customCommands[channel][name] = {};
-            self.customCommands[channel][name].command = command.toLowerCase();
+            self.customCommands[channel][name].command = command;
             self.customCommands[channel][name].rank = rank;
             bot.say(channel, ((edited) ? ("Edited ") : ("Added ")) + name + " at rank " + readRank(rank) + "!");
             saveObject("./misc/commands.json", self.customCommands);
