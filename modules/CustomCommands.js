@@ -27,14 +27,14 @@ exports.setup = function() {
     this.customCommands = loadObject("./misc/commands.json"); //synchronous
     commands.addcom = {
         syntax: "addcom <rank r/s/m/b> <command name> <formatted text>",
-        rank: 2,
+        rank: 3,
         command: function(user, message, channel) {
             console.log(JSON.stringify(this.customCommands));
             if (this.rank < 2) {
                 console.log("Addcom is not supported on rank lower than 2 (mod).");
                 this.rank = 2;
             }
-            if (getRank(user) < this.rank) return;//rank checking, just incase
+            if (getRank(user, channel) < this.rank) return;//rank checking, just incase
             var indexes = message.getIndexes(" ");
             if (indexes.length < 3) {
                 bot.say(channel, "Error adding command. Correct syntax is: " + this.syntax);
@@ -64,13 +64,13 @@ exports.setup = function() {
     };
     commands.delcom = {
         syntax: "!delcom <command>",
-        rank: 2,
+        rank: 3,
         command: function(user, message, channel) {
             if (this.rank < 2) {
                 console.log("Delcom is not supported on rank lower than 2 (mod).");
                 this.rank = 2;
             }
-            if (getRank(user) < this.rank) return;
+            if (getRank(user, channel) < this.rank) return;
             var indexes = message.getIndexes(" ");
             if (indexes.length != 1) {
                 bot.say(channel, "Correct syntax is: " + this.syntax);
@@ -95,7 +95,7 @@ exports.customCommand = function(user, message, channel) {
     //console.log(trigger,text,args);
     //console.log(this);
     if (this.customCommands.hasOwnProperty(channel) && this.customCommands[channel].hasOwnProperty(trigger)) {
-        if (this.customCommands[channel][trigger].rank <= getRank(user)) {
+        if (this.customCommands[channel][trigger].rank <= getRank(user, channel)) {
             var i = 0;
             text = this.customCommands[channel][trigger].command;
             while (text.indexOf("{arg" + Number(i + 1) + "}") > -1) {

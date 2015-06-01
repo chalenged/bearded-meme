@@ -15,12 +15,60 @@
 
 exports.setup = function() {
     commands = {}; //global object for commands
+    loadObject("./misc/voices.json", function(obj) {
+        voices = obj;
+    });
+    commands.voice = {
+        syntax: "!voice <add|del|list> [user]",
+        command: function(user, message, channel) {
+            if (!voices.hasOwnProperty(channel)) voices[channel] = [];
+            var args = message.split(" ");
+            if (args.length < 2) {
+                bot.say(channel, "Correct syntax is: " + this.syntax);
+                return;
+            }
+            if (/add/i.test(args[1])) {
+                if (args.length != 3) {
+                    bot.say(channel, "Correct syntax is: " + this.syntax);
+                    return;
+                }
+                args[2] = args[2].clean().toLowerCase();
+                if (voices[channel].indexOf(args[2]) > -1) {
+                    bot.say(channel, "That user is already voiced!");
+                    return;
+                } else {
+                    voices[channel].push(args[2]);
+                    bot.say(channel, args[2] + " is now voiced.");
+                    saveObject("./misc/voices.json", voices);
+                }
+            } else if (/del|delete|remove/i.test(args[1])) {
+                if (args.length != 3) {
+                    bot.say(channel, "Correct syntax is: " + this.syntax);
+                    return;
+                }
+                args[2] = args[2].clean().toLowerCase();
+                if (voices[channel].indexOf(args[2]) > -1) {
+                    voices[channel].splice(voices[channel].indexOf(args[2]), 1);
+                    bot.say(channel, args[2] + " is no longer voiced.");
+                } else {
+                    bot.say(channel, "That user isn't voiced yet!");
+                    return;
+                }
+
+            } else if (/list/i.test(args[1])) {
+                bot.say(channel, "Voices: " + voices[channel].join(", "));
+            }
+        },
+        rank: 2
+    };
+
+    commands.voices = commands.voice;//alias
 
     getRank = function(user, channel) { //allows commands to easily get ranks
-        if (getPreference("admins", channel, "").indexOf(user.username) > -1 || (preferences["#global"].hasOwnProperty("admins") && preferences["#global"].admins.indexOf(user.username) > -1)) return 5; //admins have highest rank
+        if (getPreference("admins", channel, "").indexOf(" " + user.username + " ") > -1 || (preferences["#global"].hasOwnProperty("admins") && preferences["#global"].admins.indexOf(user.username) > -1)) return 5; //admins have highest rank
         if (user.isBroadcaster()) return 4;
         if (user.isMod()) return 3;
-        //get voice rank (coming soon!)
+        if (voices.hasOwnProperty(channel) && voices[channel].indexOf(user.username.clean().toLowerCase()) > -1) return 2;
         if (user.isSubscriber()) return 1;
         else return 0;
     };
@@ -47,7 +95,8 @@ exports.onMessage = function(user, channel, msg, message) {
     //console.log(user);
     var commandCharacters = getPreference("commandCharacters", channel, "!");
     var found = false;
-    console.log(user.username, "has rank of", getRank(user));
+    msg = msg.clean();
+    console.log(user.username, "has rank of", getRank(user, channel));
     //console.log("command characters: "  + commandCharacters);
     if (commandCharacters.indexOf(msg.charAt(0)) > -1) {
         var index = msg.indexOf(" ");

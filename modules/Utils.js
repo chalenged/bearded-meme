@@ -32,11 +32,15 @@ exports.setup = function() {
             return obj;
         }
         fs.readFile(filename, function (err, data) {
-            if (err) {
+            if (err && err.code != "ENOENT") {
                 console.log("Error loading object.");
                 throw err;
             } else {
-                callback(JSON.parse(data));
+                if (err && err.code == "ENOENT") {
+                    callback({});
+                } else {
+                    callback(JSON.parse(data));
+                }
             }
 
         });

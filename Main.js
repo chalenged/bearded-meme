@@ -90,8 +90,8 @@ client = net.connect(6667, 'irc.twitch.tv', function () {
 
 client.pipe(ircMsg.createStream())
     .on('data', function(message) {
-        //console.log("RAW> " + message.raw);
-        console.log(message);
+        console.log("RAW> " + message.raw);
+        //console.log(message);
         /*this switch is for the different IRC commands that are sent to the bot client
          * EACH ONE should emit the command as the event, and the last parameter
          * should be the message, to allow modules to hook in and get access to
@@ -146,6 +146,13 @@ String.prototype.getIndexes = function(arg) {//returns an array of indexes the a
     return indexes;
 };
 
+String.prototype.clean = function() {//removes extra whitespace
+    var text = this;
+    text = text.replace(/\s+/g, " "); //removes multiple spaces, which is supported by IRC, but generally not shown
+    text = text.trim(); //removes whitespace on the edges
+    return text;
+};
+
 preferences = {};
 
 assertFolder = function(folder) {
@@ -179,7 +186,7 @@ function readPreferences() {
     data = data.replace(/\r/g, ""); //remove carriage returns
     var prefs = data.split("\n"); //splits for each line
     for (var i = 0; i < prefs.length; i++) { //operate on each line
-        var line = prefs[i]; //easy reference
+        var line = prefs[i].clean(); //easy reference
         if (!line) continue;
         if (line.charAt(0) === '#') {
             channel = line;
