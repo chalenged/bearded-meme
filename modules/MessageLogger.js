@@ -18,6 +18,6 @@ exports.setup = function() {
     };
 };
 
-exports.onMessage = function(user, message, channel) {
-    logMessage(user, message, channel);
+exports.onMessage = function(user, channel, msg, message) {
+    logMessage(user, msg, channel);
 };

@@ -6,16 +6,130 @@
   *
   * You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+
+const VERSION = "0.0.0.0";
+
+net = require("net");
+var ircMsg = require("irc-message");
+//var options = require("./options.json");
+
 options = require("./options.json");
 //irc = require("irc");
-twitchirc = require("twitch-irc");
+//twitchirc = require("twitch-irc");
+//net = require("net");
+//ircMsg = require("irc-message");
 fs = require("fs");
 
+//bot = new twitchirc.client(options); //global so modules can access the bot, to make it say things, do actions, etc.
+//
+//
+//bot.connect();
 
-bot = new twitchirc.client(options); //global so modules can access the bot, to make it say things, do actions, etc.
 
 
-bot.connect();
+function User(username) {
+    this.username = username;
+    this.badges = {};
+    this.isSubscriber = function() {
+        return this.badges.subscriber == "1";
+    };
+    this.isMod = function() {
+        return this.badges.mod == "1";
+    };
+    this.isTurbo = function() {
+        return this.badges.turbo == "1";
+    };
+    this.isBroadcaster = function() {
+        return this.badges.broadcaster == "1";
+    };
+
+}
+
+bot = new (require('events').EventEmitter);
+bot.setMaxListeners(0); //Unlimited listeners (Remember to delete a listener if you stop needing it!)
+bot.say = function(channel, msg) {
+    console.log("sending message to server");
+    client.write("PRIVMSG " + channel + " :" + msg + "\r\n");
+};
+
+//net.connect(6667, 'irc.twitch.tv')
+//    .pipe(ircMsg.createStream())
+//    .on('data', function(message) {
+//        console.log(message)
+//    });
+
+//client.addListener("data", function(chuck) {
+//    console.log("Received: ", chunk);
+//});
+
+//
+//
+//var client = new net.Socket();
+
+client = net.connect(6667, 'irc.twitch.tv', function () {
+    console.log("Connected!");
+    var channels = "";
+    for (var i = 0; i < options.channels.length; i++) {
+        channels += ":" + options.identity.username +"!" + options.identity.username + "@" + options.identity.username + ".tmi.twitch.tv JOIN #" + options.channels[i] + "\r\n";
+    }
+
+    client.write(
+        "PASS " + options.identity.password + "\r\n" +
+        "NICK " + options.identity.username + "\r\n" +
+        "USER nodebot USING NODE IRC\r\n" +
+        "CAP REQ :twitch.tv/tags\r\n" +
+        "CAP REQ :twitch.tv/commands\r\n" +
+        "CAP REQ :twitch.tv/membership\r\n" +
+            //"TWITCHCLIENT 4\r\n" +
+        channels
+    );
+    //client.write("PASS " + options.identity.password + "\r\n");
+    //client.write("NICK " + options.identity.username + "\r\n");
+    //client.write("JOIN #chalenged" + "\r\n");
+});
+
+client.pipe(ircMsg.createStream())
+    .on('data', function(message) {
+        //console.log("RAW> " + message.raw);
+        console.log(message);
+        /*this switch is for the different IRC commands that are sent to the bot client
+         * EACH ONE should emit the command as the event, and the last parameter
+         * should be the message, to allow modules to hook in and get access to
+         * all prudent information
+         * */
+        switch (message.command) {
+            case "JOIN":case "PART": //part and join are done is a very similar manner, so we do them in the same block
+                var userregex = /(.*)!.*@.*\.tmi\.twitch\.tv/gi; //regex used to get user
+                var data = userregex.exec(message.prefix);//get user from the prefix
+                var room = message.params[0]; //the room
+                var user = data[1];
+                //console.log(data[1], "joined room", room, ".\r\n");
+                bot.emit(message.command, user, room, message); //emits the message for modules to hook into (message is passed in incase it is useful)
+            break;
+            case "PRIVMSG":
+
+                var user = new User(message.tags["display-name"]); //base object
+                var room = message.params[0];
+                user.badges.subscriber = message.tags.subscriber;
+                user.badges.turbo = message.tags.turbo;
+                if (message.tags["user-type"] == "mod") user.badges.mod = "1"; //if user has mod tag
+                else user.badges.mod = "0";
+                if (room.substr(1) == user.username) user.badges.broadcaster = "1"; //if user is the same as the room name they are the broadcaster
+                else user.badges.broadcast = "0";
+                var msg = message.params[1];
+                bot.emit(message.command, user, room, msg, message);
+                break;
+            case "PING":
+                client.write("PONG tmi.twitch.tv\r\n"); //fallthrough (modules can catch PING events, however useless that may be)
+            default:
+                bot.emit(message.command, message); //This way other events (such as MODE) can still be caught by modules
+                break;
+        }
+    });
+
+//
+//client.setTimeout(0);
+client.setEncoding("utf8");
 
 String.prototype.getIndexes = function(arg) {//returns an array of indexes the arg appears
     var indexes = [];
@@ -162,7 +276,7 @@ bot.addListener("join", function (channel, who) {
 */
 
 getPreference = function(preference, channel, defaultValue) { //global function, modules need this function
-    if (preferences[channel].hasOwnProperty(preference)) return preferences[channel][preference];
+    if (preferences.hasOwnProperty(channel) && preferences[channel].hasOwnProperty(preference)) return preferences[channel][preference];
     if (preferences["#global"].hasOwnProperty(preference)) return preferences["#global"][preference];
     else return defaultValue;
 };
@@ -242,9 +356,9 @@ bot.addListener("raw", function(message) {
 
 
 
-bot.addListener('chat', function (channel, user, message) {
-    //console.log(user.username + ": " + message);
-    runModules("onMessage", user, message, channel);
+bot.addListener('PRIVMSG', function (user, room, msg, message) {
+    console.log(user, ": ", msg);
+    runModules("onMessage", user, room, msg, message);
 });
 /*
 process.stdin.setEncoding('utf8');

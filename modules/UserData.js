@@ -12,10 +12,10 @@ exports.setup = function(main) {
         userData[x].userlist = []; //reset userlists
     }
     var self = this;
-    if (options.options.tc != 1) {
-        console.log("Twitch Client is not client 1. For accurate joins/parts, set your twitch client version to 1. (options.options.tc)");
-    }
-    bot.addListener('chat', function(channel, user, message) {
+    //if (options.options.tc != 1) {
+    //    console.log("Twitch Client is not client 1. For accurate joins/parts, set your twitch client version to 1. (options.options.tc)");
+    //}
+    bot.addListener('PRIVMSG', function(channel, user, msg, message) {
         var username = user.username;
         //console.log(channel + ": " + username);
         if (!userData.hasOwnProperty(channel)) {
@@ -30,17 +30,17 @@ exports.setup = function(main) {
             userData[channel].userlist.push(username);
         }
         //console.log(JSON.stringify(main.userData));
-        if (options.options.tc != 1) { //if there will not be joins/parts
-            setTimeout(function(channel, username, main) { //after the preset timeout, remove the user from the userlist
-
-                //console.log(JSON.stringify(main.userData));
-                //console.log(main.userData[channel].userlist.indexOf(username));
-                if (main.userData[channel].userlist.indexOf(username) > -1) //if user still exists
-                    main.userData[channel].userlist.splice(main.userData[channel].userlist.indexOf(username), 1); //remove from userlist
-            }, Number(getPreference('chatPersistence', channel, 300000)), channel, user.username, main);
-        }
+        //if (options.options.tc != 1) { //if there will not be joins/parts
+        //    setTimeout(function(channel, username, main) { //after the preset timeout, remove the user from the userlist
+        //
+        //        //console.log(JSON.stringify(main.userData));
+        //        //console.log(main.userData[channel].userlist.indexOf(username));
+        //        if (main.userData[channel].userlist.indexOf(username) > -1) //if user still exists
+        //            main.userData[channel].userlist.splice(main.userData[channel].userlist.indexOf(username), 1); //remove from userlist
+        //    }, Number(getPreference('chatPersistence', channel, 300000)), channel, user.username, main);
+        //}
     });
-    bot.addListener('join', function (channel, username) {
+    bot.addListener('JOIN', function (username, channel, message) {
         //console.log(username + " just joined channel " + channel);
         if (!userData.hasOwnProperty(channel)) {
             userData[channel] = {};
@@ -53,7 +53,7 @@ exports.setup = function(main) {
         }
 
     });
-    bot.addListener('part', function (channel, username) {
+    bot.addListener('PART', function (username, channel, message) {
         //console.log(username + " just left channel " + channel);
         if (main.userData[channel].userlist.indexOf(username) > -1) //if user still exists
             main.userData[channel].userlist.splice(main.userData[channel].userlist.indexOf(username), 1); //remove from userlist
