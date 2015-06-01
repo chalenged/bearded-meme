@@ -5,7 +5,7 @@
   "bugs": "https://github.com/chalenged/bearded-meme/issues",
   "license": "GPL-3.0",
   "dependencies": {
-    "twitch-irc": "latest",
+    "irc-message": "latest",
     "request": "latest"
   },
   "contributors": [
