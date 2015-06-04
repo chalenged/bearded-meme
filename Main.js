@@ -107,7 +107,10 @@ client.pipe(ircMsg.createStream())
                 bot.emit(message.command, user, room, message); //emits the message for modules to hook into (message is passed in incase it is useful)
             break;
             case "PRIVMSG":
-
+                if (/^:jtv!jtv@jtv.tmi.twitch.tv/.test(message.raw)) { //info from the server has no username but still uses PRIVMSG, so treat it as if it was an INFO command
+                    bot.emit("INFO", message);
+                    return;
+                }
                 var user = new User(message.tags["display-name"]); //base object
                 var room = message.params[0];
                 user.badges.subscriber = message.tags.subscriber;
