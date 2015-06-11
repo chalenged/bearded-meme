@@ -7,5 +7,9 @@
 "username": "testuser",
 "password": "oauth:<your oauth token>"
 },
+  "channelTokens": {
+    "examplechannel": "asjkhfdakjsdhgkadhgl",
+    "otherexample": "klhsgrilkheroihn235k3h6n43"
+  },
 "channels": ["testchannel"]
 }

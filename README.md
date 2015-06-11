@@ -1,5 +1,5 @@
 # Bearded-Meme
-This is a twitch bot I made using the [Twitch-Irc][twitchirc] [node][node] module. The name was suggested by GitHub, and I thought it was pretty dank so I kept it. :sunglasses:
+This is a twitch bot. The name was suggested by GitHub, and I thought it was pretty dank so I kept it. :sunglasses:
 
 #### Info
 If you notice something wrong with the code, or just want to add things, feel free to make a pull request.
@@ -81,7 +81,11 @@ This way, all modules will have access to the attribute. Each module can use the
     
 Do note that if creating a function inside one of these functions (such as creating a command), you may need to set a variable to "this", because of the way "this" works. Look at the existing modules for more reference. Example-Module might be useful.
 
-[twitchirc]: https://github.com/twitch-irc/twitch-irc "Twitch-Irc on git"
+#### Channel Authorization
+To allow the bot to do things such as change stream status and game, you need to setup an OAuth token, different than the one used to let the bot log in. To do so, simply go to https://api.twitch.tv/kraken/oauth2/authorize?response_type=token&client_id=46ltr2qjw2omg950rsp9bkpg9jintd3&redirect_uri=http://localhost&scope=channel_editor and change the scope as needed. Authorize bearded-meme to access your account. You will then be at what seems like and empty page, do **not** refresh. In the address bar will be an access token; copy the token and put it into the options JSON file under "channelTokens" and under <channelname> (check the example options for reference) Then the bot will be able to change your status and game through the related module. Remember that this token can be used to change status, game, and some other sensitive things, so be sure to keep the token private.
+
+Feel free to make your own twitch app and configure the bot to work with that, using your own CLIENTID and access tokens. However, that's probably more trouble than it's worth.
+
 [node]: https://nodejs.org/ "Node home site"
 [json]: http://json.org "JSON home site"
 [mytwitch]: http://twitch.tv/chalenged "My Twitch"

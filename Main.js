@@ -7,10 +7,12 @@
   * You should have received a copy of the GNU General Public License along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 
-const VERSION = "0.0.0.0";
+VERSION = "0.0.0.0";
+CLIENTID = "46ltr2qjw2omg950rsp9bkpg9jintd3"; //used for twitch-api
 
 net = require("net");
-var ircMsg = require("irc-message");
+ircMsg = require("irc-message");
+request = require("request");
 //var options = require("./options.json");
 
 options = require("./options.json");

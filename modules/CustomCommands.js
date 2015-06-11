@@ -26,7 +26,7 @@ exports.setup = function() {
     //});
     this.customCommands = loadObject("./misc/commands.json"); //synchronous
     commands.addcom = {
-        syntax: "addcom <rank r/s/m/b> <command name> <formatted text>",
+        syntax: "addcom <rank r/s/v/m/b/a> <command name> <formatted text>",
         rank: 3,
         command: function(user, message, channel) {
             console.log(JSON.stringify(this.customCommands));
@@ -42,7 +42,7 @@ exports.setup = function() {
             }
             var rank = message.substring(indexes[0], indexes[1]).trim();
             console.log(rank);
-            if ("rsmb0123".indexOf(rank) === -1 || rank.length != 1) {
+            if ("rsvmba012345".indexOf(rank) === -1 || rank.length != 1) {
                 bot.say(channel, "Error determining rank. Correct syntax is: " + this.syntax);
                 return;
             }
@@ -98,13 +98,106 @@ exports.customCommand = function(user, message, channel) {
         if (this.customCommands[channel][trigger].rank <= getRank(user, channel)) {
             var i = 0;
             text = this.customCommands[channel][trigger].command;
-            while (text.indexOf("{arg" + Number(i + 1) + "}") > -1) {
-                i++;
-                text = text.replace(new RegExp("{arg" + i + "}", "g"), args[i-1]);
-                //console.log(text + "//" + i);
+            //while (text.indexOf("{arg" + Number(i + 1) + "}") > -1) {
+            //    i++;
+            //    text = text.replace(new RegExp("{arg" + i + "}", "g"), args[i-1]);
+            //    //console.log(text + "//" + i);
+            //}
+
+            var argRegex = /{(\w*:|)arg(\d)+\}/;
+            var arr, options, num, replacement;
+            while (arr = argRegex.exec(text)) {
+                //arr = ;
+                //argRegex.lastIndex = 0;
+                //arr = argRegex.exec(text);
+                //var lastIndex = argRegex.lastIndex;
+                options = arr[1].toLowerCase();
+                num = arr[2];
+                if (num < 1 || num >= args.length) {
+                    return;
+                }
+                //if (arr[1] != '') {
+                //    console.log("options found");
+                //}
+                //console.log(arr);
+                replacement = args[num-1];
+                if (options.indexOf("l") > -1) {
+                    replacement = replacement.toLowerCase();
+                }
+                if (options.indexOf("u") > -1) {
+                    replacement = replacement.toUpperCase();
+                }
+                //text = text.substr(0, arr.index) + text.replace(argRegex, replacement) + text.substr(arr.index + arr[0].length);
+                text = text.replace(argRegex, replacement);
+                //argRegex.lastIndex = lastIndex;
             }
-            if (i > args.length) return;
-            text = text.replace(/\{user}/g, user.username);
+
+            var argsRegex = /{([()-\w]*:|)args\}/;
+            while (arr = argsRegex.exec(text)) {
+                //console.log(arr);
+                options = arr[1].toLowerCase();
+                replacement = message.substr(message.indexOf(" ") + 1);
+                if (options.indexOf("l") > -1) {
+                    replacement = replacement.toLowerCase();
+                }
+                if (options.indexOf("u") > -1) {
+                    replacement = replacement.toUpperCase();
+                }
+                text = text.replace(argsRegex, replacement);
+
+            }
+
+            var userRegex = /{(\w*:|)user\}/;
+            while (arr = userRegex.exec(text)) {
+                //console.log(arr);
+                options = arr[1].toLowerCase();
+                replacement = user.username;
+                if (options.indexOf("l") > -1) {
+                    replacement = replacement.toLowerCase();
+                }
+                if (options.indexOf("u") > -1) {
+                    replacement = replacement.toUpperCase();
+                }
+                text = text.replace(userRegex, replacement);
+
+            }
+
+            var chanRegex = /{(\w*:|)chan\}/;
+            while (arr = chanRegex.exec(text)) {
+                //console.log(arr);
+                options = arr[1].toLowerCase();
+                replacement = channel.substr(1); //remove the #
+                if (options.indexOf("l") > -1) {
+                    replacement = replacement.toLowerCase();
+                }
+                if (options.indexOf("u") > -1) {
+                    replacement = replacement.toUpperCase();
+                }
+                text = text.replace(chanRegex, replacement);
+
+            }
+            console.log("test: ", text);
+
+            var apiRegex = /{([\S]+):api\}/;
+            var apiFound = false;
+            if (arr = apiRegex.exec(text)) { //only 1 api is supported in a command
+                apiFound = true;
+                var apiURI = arr[1];
+                request(apiURI, function (error, response, body) {
+                    if (!error && response.statusCode == 200) {
+                        text = text.replace(apiRegex, body);
+                        bot.say(channel, text);
+
+                    } else {
+                        bot.say(channel, text.replace(apiRegex, "Error using api"));
+                    }
+                })
+            }
+
+
+            if (apiFound) return; //bot will send the message from the callback
+            //if (i > args.length) return;
+            //text = text.replace(/\{user}/g, user.username);
             bot.say(channel, text);
         }
     }
