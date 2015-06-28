@@ -96,7 +96,7 @@ exports.onMessage = function(user, channel, msg, message) {
     var commandCharacters = getPreference("commandCharacters", channel, "!");
     var found = false;
     msg = msg.clean();
-    console.log(user.username, "has rank of", getRank(user, channel));
+    //console.log(user.username, "has rank of", getRank(user, channel));
     //console.log("command characters: "  + commandCharacters);
     if (commandCharacters.indexOf(msg.charAt(0)) > -1) {
         var index = msg.indexOf(" ");
