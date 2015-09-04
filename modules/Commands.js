@@ -50,6 +50,7 @@ exports.setup = function() {
                 if (voices[channel].indexOf(args[2]) > -1) {
                     voices[channel].splice(voices[channel].indexOf(args[2]), 1);
                     bot.say(channel, args[2] + " is no longer voiced.");
+                    saveObject("./misc/voices.json", voices);
                 } else {
                     bot.say(channel, "That user isn't voiced yet!");
                     return;
@@ -76,7 +77,7 @@ exports.setup = function() {
     readRank = function(rank) {
         rank = String(rank);
         rank = rank.trim();
-        if ("012345".indexOf(rank) > -1) rank = "rsvmb"["012345".indexOf(rank)];
+        if ("012345".indexOf(rank) > -1) rank = "rsvmba"["012345".indexOf(rank)];
         var text = "";
         switch (rank) {
             case "r": text = "r (regular)"; break;
