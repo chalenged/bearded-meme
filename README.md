@@ -8,6 +8,7 @@ If you have any questions, concerns, or suggestions, contact me at any of the fo
 
 -	Email: <chalenged@users.noreply.github.com>
 -	Twitch: [my twitch][mytwitch]
+-	Twitter: http://twitter.com/_chalenged
 
 #### Installation
 First, install [node.js][node]. It is required for the bot to work. After installing node, you can either clone the git repository into a folder on your computer, fork the git so you can change things yourself, or simply downloading and extracting the zip file. If you just get the zip, you will have to make the changes yourself if you want any updates. After getting the folder ready, you will need to install the node modules from the command line in the folder you installed the bot to. On windows, you can simply use windows search for "cmd", which will open up the command prompt. Navigate to the folder through the console. You can copy the file directory from windows explorer and right click in command prompt to paste it in. do 
